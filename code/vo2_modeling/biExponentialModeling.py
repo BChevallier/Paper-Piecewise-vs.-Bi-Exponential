@@ -4,11 +4,11 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 # File paths
-sg_path = '../../data/prepared_data/sg_filtered_4mintt.csv'
-bw_path = '../../data/prepared_data/bw_filtered_4mintt.csv'
-cleaned_path = '../../data/prepared_data/preparedTimeTrial.csv'
+sg_path = '../../treadmill_data/prepared_data/sg_filtered_4mintt.csv'
+bw_path = '../../treadmill_data/prepared_data/bw_filtered_4mintt.csv'
+cleaned_path = '../../treadmill_data/prepared_data/preparedTimeTrial.csv'
 
-# Load data
+# Load treadmill_data
 df_sg = pd.read_csv(sg_path)
 df_bw = pd.read_csv(bw_path)
 df_cleaned = pd.read_csv(cleaned_path)
@@ -76,7 +76,7 @@ for participant in participants:
     rmse_pct_results.loc[participant, 'cleaned'] = rmse_pct
     params_df.loc[participant, ('cleaned',)] = popt
 
-results.to_csv('../../data/breakpoints_and_modelFit_by_method/tt4_breakpoints_biexponential.csv')
-rmse_pct_results.to_csv('../../data/breakpoints_and_modelFit_by_method/tt4_breakpoints_biexponential_rmse_pct.csv')
-params_df.to_csv('../../data/breakpoints_and_modelFit_by_method/tt4_biexponential_params.csv')
+results.to_csv('../../treadmill_data/breakpoints_and_modelFit_by_method/tt4_breakpoints_biexponential.csv')
+rmse_pct_results.to_csv('../../treadmill_data/breakpoints_and_modelFit_by_method/tt4_breakpoints_biexponential_rmse_pct.csv')
+params_df.to_csv('../../treadmill_data/breakpoints_and_modelFit_by_method/tt4_biexponential_params.csv')
 print('Bi-exponential breakpoints, RMSE percentages, and parameter values saved.')

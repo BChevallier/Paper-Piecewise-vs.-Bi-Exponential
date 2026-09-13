@@ -1,9 +1,9 @@
 import pandas as pd
 
-totalData="../../data/raw_data/generalData.csv"
+totalData="../../treadmill_data/raw_data/generalData.csv"
 colsToKeep = ["ID", "o2_intercept_y", "o2_slope_y","tt4_d","vo2_max_abs","body_mass","D","cs","t_100", "cmj","mss"]
 
-#read data
+#read treadmill_data
 df = pd.read_csv(totalData)[colsToKeep]
 
 #converts mililiter to liter
@@ -25,4 +25,4 @@ df["speedTT4"]=df["tt4_d"].apply(distTT4toSpeed)
 df.drop(columns=["tt4_d"], inplace=True)
 
 #saves the new csv
-df.to_csv("../../data/prepared_data/preparedGeneralData.csv")
+df.to_csv("../../treadmill_data/prepared_data/preparedGeneralData.csv")

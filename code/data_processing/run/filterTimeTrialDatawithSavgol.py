@@ -2,12 +2,12 @@ import pandas as pd
 from scipy.signal import savgol_filter
 
 # Parameters for Savitzky-Golay filter
-window_length = 7  # Must be odd and <= number of data points
+window_length = 7  # Must be odd and <= number of treadmill_data points
 polyorder = 3
 
-# Load data
-input_path = '../../data/prepared_data/preparedTimeTrial.csv'
-output_path = '../../data/prepared_data/sg_filtered_4mintt.csv'
+# Load treadmill_data
+input_path = '../../../treadmill_data/prepared_data/preparedTimeTrial.csv'
+output_path = '../../../treadmill_data/prepared_data/sg_filtered_4mintt.csv'
 df = pd.read_csv(input_path)
 
 # Apply SG filter to each participant column (except 'time')
@@ -20,6 +20,6 @@ for col in df.columns:
         else:
             filtered_df[col] = df[col]  # Not enough points, leave unchanged
 
-# Save filtered data
+# Save filtered treadmill_data
 filtered_df.to_csv(output_path, index=False)
-print(f"SG-smoothed data saved to {output_path}")
+print(f"SG-smoothed treadmill_data saved to {output_path}")

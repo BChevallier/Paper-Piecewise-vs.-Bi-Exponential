@@ -3,11 +3,11 @@ import pwlf
 import numpy as np
 
 # File paths
-sg_path = '../../data/prepared_data/sg_filtered_4mintt.csv'
-bw_path = '../../data/prepared_data/bw_filtered_4mintt.csv'
-cleaned_path = '../../data/prepared_data/preparedTimeTrial.csv'
+sg_path = '../../treadmill_data/prepared_data/sg_filtered_4mintt.csv'
+bw_path = '../../treadmill_data/prepared_data/bw_filtered_4mintt.csv'
+cleaned_path = '../../treadmill_data/prepared_data/preparedTimeTrial.csv'
 
-# Load data
+# Load treadmill_data
 df_sg = pd.read_csv(sg_path)
 df_bw = pd.read_csv(bw_path)
 df_cleaned = pd.read_csv(cleaned_path)
@@ -54,6 +54,6 @@ for participant in participants:
     results.loc[participant, 'cleaned'] = bp
     rmse_pct_results.loc[participant, 'cleaned'] = rmse_pct
 
-results.to_csv('../../data/breakpoints_and_modelFit_by_method/tt4_breakpoints_piecewise.csv')
-rmse_pct_results.to_csv('../../data/breakpoints_and_modelFit_by_method/tt4_breakpoints_piecewise_rmse_pct.csv')
-print('Breakpoints and RMSE percentages saved to ../../data/breakpoints_and_modelFit_by_method/tt4_breakpoints_piecewise.csv and tt4_breakpoints_piecewise_rmse_pct.csv')
+results.to_csv('../../treadmill_data/breakpoints_and_modelFit_by_method/tt4_breakpoints_piecewise.csv')
+rmse_pct_results.to_csv('../../treadmill_data/breakpoints_and_modelFit_by_method/tt4_breakpoints_piecewise_rmse_pct.csv')
+print('Breakpoints and RMSE percentages saved to ../../treadmill_data/breakpoints_and_modelFit_by_method/tt4_breakpoints_piecewise.csv and tt4_breakpoints_piecewise_rmse_pct.csv')

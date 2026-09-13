@@ -1,8 +1,8 @@
 import pandas as pd
 from scipy.signal import butter, filtfilt
 
-# Load your data
-df = pd.read_csv("../../data/prepared_data/preparedTimeTrial.csv")
+# Load your treadmill_data
+df = pd.read_csv("../../../treadmill_data/prepared_data/preparedTimeTrial.csv")
 
 # Define filter parameters
 sampling_rate = 1 / 5  # 1 sample every 5 seconds = 0.2 Hz
@@ -19,5 +19,5 @@ data_columns = df.columns.drop('time')
 for col in data_columns:
     filtered_df[col] = filtfilt(b, a, df[col])
 
-# Optional: Save the filtered data to a new CSV file
-filtered_df.to_csv("../../data/prepared_data/bw_filtered_4mintt.csv", index=False)
+# Optional: Save the filtered treadmill_data to a new CSV file
+filtered_df.to_csv("../../treadmill_data/prepared_data/bw_filtered_4mintt.csv", index=False)
