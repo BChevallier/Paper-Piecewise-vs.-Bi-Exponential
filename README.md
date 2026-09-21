@@ -90,7 +90,7 @@ Run the seven numbered scripts in `treadmill/scripts/` in order:
 | 2 | `02_prepare_time_trial_data.py` | `data/raw/time_trial.csv` | `data/prepared/time_trial.csv` |
 | 3 | `03_filter_savitzky_golay.py` | `time_trial.csv` | `data/prepared/time_trial_sg_filtered.csv` |
 | 4 | `04_filter_butterworth.py` | `time_trial.csv` | `data/prepared/time_trial_bw_filtered.csv` |
-| 5 | `05_fit_piecewise.py` | all three time series | `results/piecewise_breakpoints.csv`, `results/piecewise_rmse_pct.csv` |
+| 5 | `05_fit_piecewise.py` | all three time series | `results/piecewise_*.csv` (breakpoints, parameters, RMSE%) |
 | 6 | `06_fit_biexponential.py` | all three time series | `results/biexponential_*.csv`, `results/monoexponential_*.csv`, `results/exponential_model_selection.csv` |
 | 7 | `07_plot_participants.py` | filtered data + `general_data.csv` (+ optionally step 5's breakpoints) | `figures/measured_vs_estimated.png` |
 
@@ -120,7 +120,7 @@ trial argument (`tt1` or `tt2`) and runs both when given none.
 | 2 | `02_prepare_time_trial_data.py` | per-second CSVs + `data/raw/delay_anmedu.xlsx` | `data/prepared/<trial>_time_trial.csv` |
 | 3 | `03_filter_savitzky_golay.py` | step 2's table | `data/prepared/<trial>_time_trial_sg_filtered.csv` |
 | 4 | `04_filter_butterworth.py` | step 2's table | `data/prepared/<trial>_time_trial_bw_filtered.csv` |
-| 5 | `05_fit_piecewise.py` | all three time series | `results/<trial>_piecewise_breakpoints.csv`, `results/<trial>_piecewise_rmse_pct.csv` |
+| 5 | `05_fit_piecewise.py` | all three time series | `results/<trial>_piecewise_*.csv` (breakpoints, parameters, RMSE%) |
 | 6 | `06_fit_biexponential.py` | all three time series | `results/<trial>_biexponential_*.csv`, `results/<trial>_monoexponential_*.csv`, `results/<trial>_exponential_model_selection.csv` |
 | 7 | `07_plot_participants.py` | filtered data (+ optionally step 5's breakpoints) | `figures/<trial>_participants.png` |
 

@@ -6,6 +6,12 @@ One set of files per time trial (`tt1`, `tt2`). One row per participant; one col
 - **<trial>_piecewise_breakpoints.csv**
   Breakpoint (s) of the two-segment piecewise-linear fit.
 
+- **<trial>_piecewise_params.csv**
+  All piecewise parameters per signal variant: `breakpoint`, and
+  `slope1, intercept1, slope2, intercept2` for the two segments (VO2 =
+  intercept + slope * t, in L/min and L/min per s). `intercept2` is the
+  second line extended back to t = 0. Two header rows (variant, parameter).
+
 - **<trial>_piecewise_rmse_pct.csv**
   RMSE of the piecewise fit against the unfiltered data, as % of its
   amplitude (the same reference for all three signal variants).
