@@ -10,8 +10,7 @@ independently-delayed exponential rises, following the two-time-delay
 extension to standard mono-exponential VO2 on-kinetics modeling used in
 Bell et al. (2001, Exp Physiol 86(5):667-676) for characterizing the
 primary/fast phase and the slow-component phase of the response
-separately (see LITERATURE.md for background - not part of this public
-repo, kept as the author's private working notes):
+separately:
 
     VO2(t) = A0
              + A1 * (1 - exp(-(t - TD1)_clamped / tau1))   # fast component
