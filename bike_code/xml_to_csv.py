@@ -1,4 +1,14 @@
+"""
+Convert the raw CPET spiro exports (Excel 2003 SpreadsheetML, .xml) into one CSV
+per participant and trial.
+
+Usage:
+    python xml_to_csv.py            # both trials
+    python xml_to_csv.py tt1        # one trial
+"""
+
 import csv
+import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -7,11 +17,11 @@ from pathlib import Path
 # EDIT THESE SETTINGS
 # =========================
 
-INPUT_FOLDER = Path("../bike_data/raw_data/ergo_data")
-OUTPUT_FOLDER = Path("../bike_data/raw_data/tt2")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+INPUT_FOLDER = REPO_ROOT / "bike_data" / "raw_data" / "ergo_data"
+OUTPUT_ROOT = REPO_ROOT / "bike_data" / "raw_data"
 
-INPUT_FILE_PATTERN = "tt2_cpet_p{participant:02d}.xml"
-OUTPUT_FILE_PATTERN = "tt2_p{participant:02d}.csv"
+TRIALS = ("tt1", "tt2")
 
 FIRST_PARTICIPANT = 1
 LAST_PARTICIPANT = 44
@@ -160,36 +170,42 @@ def convert_xml_table_to_csv(
     csv_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(csv_path, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(headers)
         writer.writerows(records)
 
     return len(records)
 
 
-for participant in range(FIRST_PARTICIPANT, LAST_PARTICIPANT + 1):
-    input_xml_path = INPUT_FOLDER / INPUT_FILE_PATTERN.format(
-        participant=participant
-    )
+def run(trial):
+    for participant in range(FIRST_PARTICIPANT, LAST_PARTICIPANT + 1):
+        input_xml_path = INPUT_FOLDER / f"{trial}_cpet_p{participant:02d}.xml"
+        output_csv_path = OUTPUT_ROOT / trial / f"{trial}_p{participant:02d}.csv"
 
-    output_csv_path = OUTPUT_FOLDER / OUTPUT_FILE_PATTERN.format(
-        participant=participant
-    )
+        if not input_xml_path.exists():
+            continue
 
-    if not input_xml_path.exists():
-        print(f"Skipping p{participant:02d}: file not found: {input_xml_path}")
-        continue
+        try:
+            row_count = convert_xml_table_to_csv(
+                xml_path=input_xml_path,
+                csv_path=output_csv_path,
+                table_title=TABLE_TITLE,
+                skip_units_row=SKIP_UNITS_ROW,
+                remove_milliseconds_from_t=REMOVE_MILLISECONDS_FROM_T
+            )
 
-    try:
-        row_count = convert_xml_table_to_csv(
-            xml_path=input_xml_path,
-            csv_path=output_csv_path,
-            table_title=TABLE_TITLE,
-            skip_units_row=SKIP_UNITS_ROW,
-            remove_milliseconds_from_t=REMOVE_MILLISECONDS_FROM_T
-        )
+            print(
+                f"{trial} p{participant:02d}: converted {row_count} rows -> "
+                f"{output_csv_path.relative_to(REPO_ROOT)}"
+            )
 
-        print(f"p{participant:02d}: converted {row_count} rows -> {output_csv_path}")
+        except Exception as e:
+            print(f"{trial} p{participant:02d}: failed: {e}")
 
-    except Exception as e:
-        print(f"p{participant:02d}: failed: {e}")
+
+if __name__ == "__main__":
+    requested = sys.argv[1:] or TRIALS
+    for trial in requested:
+        if trial not in TRIALS:
+            raise SystemExit(f"Unknown trial {trial!r}; expected one of {TRIALS}")
+        run(trial)

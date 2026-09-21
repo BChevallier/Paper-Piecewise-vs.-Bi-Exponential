@@ -1,95 +1,142 @@
-import pandas as pd
-from scipy.signal import butter, filtfilt
-import matplotlib.pyplot as plt
+"""
+Trim each cycling time-trial CPET recording to the trial itself, then low-pass
+filter V'O2.
+
+Clock correction
+----------------
+The spiro device clock runs *behind* real time by a per-participant offset
+recorded in delay_anmedu.xlsx: a delay of 20 means the spiro reads 2:00 when
+2:20 has actually elapsed. The time trial starts TRIAL_START_REAL_S into the
+session in real time, so on the spiro clock it begins at
+TRIAL_START_REAL_S - delay.
+
+An earlier version of this script trimmed at 00:03:<delay>, i.e. it *added* the
+delay instead of subtracting it. For participants with a large offset that
+discarded up to a minute of the V'O2 onset transient — the part the kinetics
+models are fitted to.
+
+Usage:
+    python filter_and_trim_data.py            # both trials
+    python filter_and_trim_data.py tt1        # one trial
+"""
+
+import sys
 from pathlib import Path
 
+import pandas as pd
+from scipy.signal import butter, filtfilt
 
-PATH_DELAY = Path("../bike_data/raw_data/delay_anmedu.xlsx")
-PATH_O2 = Path("../bike_data/raw_data/tt2")
-OUTPUT_PATH = Path("../bike_data/prepared_data/tt2")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PATH_DELAY = REPO_ROOT / "bike_data" / "raw_data" / "delay_anmedu.xlsx"
+RAW_ROOT = REPO_ROOT / "bike_data" / "raw_data"
+PREPARED_ROOT = REPO_ROOT / "bike_data" / "prepared_data"
 
-OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+TRIALS = ("tt1", "tt2")
+FIRST_PARTICIPANT = 1
+LAST_PARTICIPANT = 44
 
-df_delay = pd.read_excel(PATH_DELAY)
+# Real-time offset of the trial start from the beginning of the recording.
+TRIAL_START_REAL_S = 180
 
-columns_to_filter = ["V'O2"]
+COLUMNS_TO_FILTER = ["V'O2"]
+CUTOFF_HZ = 0.2
+FILTER_ORDER = 4
+MIN_POINTS_FOR_FILTER = 20
 
-cutoff = 0.2  # Hz
-order = 4
 
-for i in range(1, 45):
-    participant_id = str(i).zfill(2)
+def load_delays(trial):
+    """Map participant id -> spiro clock offset in seconds for one trial."""
+    df = pd.read_excel(PATH_DELAY)
+    return df.set_index("PID")[f"delay_cpet_{trial}"]
 
-    input_file = PATH_O2 / f"tt2_p{participant_id}.csv"
-    output_file = OUTPUT_PATH / f"tt2_p{participant_id}.csv"
 
-    try:
-        df_o2 = pd.read_csv(input_file)
-    except FileNotFoundError:
-        print(f"P{participant_id} not found")
-        continue
+def trial_start_on_spiro_clock(delay_s):
+    """Spiro-clock time at which the trial starts, given the device's lag."""
+    return pd.Timedelta(seconds=TRIAL_START_REAL_S - delay_s)
 
-    # Convert time column
-    df_o2["t"] = pd.to_timedelta(df_o2["t"])
 
-    # Get participant-specific delay
-    delay = df_delay.loc[i - 1, "delay_cpet_tt2"]
+def lowpass(series, fs):
+    b, a = butter(FILTER_ORDER, CUTOFF_HZ, btype="low", fs=fs)
+    return filtfilt(b, a, series)
 
-    print(f"Delay of P{participant_id}: {delay}")
 
-    # Remove rows before/equal to delay
-    df_o2 = df_o2[df_o2["t"] > pd.Timedelta(f"00:03:{delay}")].copy()
+def process_participant(raw_path, delay_s):
+    """Trim one recording to the trial and add filtered V'O2. None if unusable."""
+    df = pd.read_csv(raw_path)
+    df["t"] = pd.to_timedelta(df["t"])
 
-    if df_o2.empty:
-        print(f"P{participant_id}: no data after delay")
-        continue
+    df = df[df["t"] > trial_start_on_spiro_clock(delay_s)].copy()
+    if df.empty:
+        return None, "no data after trial start"
 
-    # Set t as index so sampling frequency is calculated from time
-    df_o2 = df_o2.set_index("t")
+    # Seconds since trial start, on the corrected (real-time) clock.
+    df["t_trial_s"] = (
+        df["t"].dt.total_seconds() + delay_s - TRIAL_START_REAL_S
+    )
 
-    # Calculate sampling frequency from TimedeltaIndex
-    dt = df_o2.index.to_series().diff().median()
+    df = df.set_index("t")
 
+    dt = df.index.to_series().diff().median()
     if pd.isna(dt) or dt.total_seconds() == 0:
-        print(f"P{participant_id}: could not calculate sampling frequency")
-        continue
+        return None, "could not determine sampling frequency"
 
     fs = 1 / dt.total_seconds()
+    if CUTOFF_HZ >= fs / 2:
+        return None, f"cutoff {CUTOFF_HZ} Hz too high for fs {fs:.3f} Hz"
 
-    # Check cutoff frequency
-    if cutoff >= fs / 2:
+    for col in COLUMNS_TO_FILTER:
+        if col not in df.columns:
+            return None, f"column {col} not found"
+
+        # Filter a cleaned copy; the recorded column is left untouched.
+        signal = pd.to_numeric(df[col], errors="coerce").interpolate(
+            limit_direction="both"
+        )
+        if signal.notna().sum() < MIN_POINTS_FOR_FILTER:
+            return None, f"not enough valid points in {col}"
+
+        df[col + "_filtered"] = lowpass(signal, fs)
+
+    return df, None
+
+
+def run(trial):
+    delays = load_delays(trial)
+    output_dir = PREPARED_ROOT / trial
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    written = 0
+    for participant in range(FIRST_PARTICIPANT, LAST_PARTICIPANT + 1):
+        pid = f"p{participant:02d}"
+        raw_path = RAW_ROOT / trial / f"{trial}_{pid}.csv"
+        if not raw_path.exists():
+            continue
+
+        delay_s = delays.get(participant)
+        if pd.isna(delay_s):
+            print(f"{trial} {pid}: no delay recorded, skipped")
+            continue
+
+        df, error = process_participant(raw_path, delay_s)
+        if df is None:
+            print(f"{trial} {pid}: {error}")
+            continue
+
+        output_path = output_dir / f"{trial}_{pid}.csv"
+        df.to_csv(output_path)
+        written += 1
         print(
-            f"P{participant_id}: cutoff {cutoff} Hz is too high for fs {fs:.3f} Hz"
-        )
-        continue
-
-    b, a = butter(order, cutoff, btype="low", fs=fs)
-
-    for col in columns_to_filter:
-        if col not in df_o2.columns:
-            print(f"P{participant_id}: column {col} not found")
-            continue
-
-        df_o2[col] = pd.to_numeric(df_o2[col], errors="coerce")
-        df_o2[col] = df_o2[col].interpolate(limit_direction="both")
-
-        # filtfilt needs enough valid points
-        if df_o2[col].notna().sum() < 20:
-            print(f"P{participant_id}: not enough data points for {col}")
-            continue
-
-        df_o2[col + "_filtered"] = filtfilt(
-            b,
-            a,
-            df_o2[col]
+            f"{trial} {pid}: delay {delay_s:.0f}s, "
+            f"trial starts {trial_start_on_spiro_clock(delay_s)} on spiro clock, "
+            f"{len(df)} rows -> {output_path.relative_to(REPO_ROOT)}"
         )
 
-    # Save after filtering
-    df_o2.to_csv(output_file)
-
-    print(f"P{participant_id}: saved {output_file}")
+    print(f"{trial}: wrote {written} files\n")
 
 
-print("Finished.")
-df_o2.plot(y="V'O2_filtered")
-plt.show()
+if __name__ == "__main__":
+    requested = sys.argv[1:] or TRIALS
+    for trial in requested:
+        if trial not in TRIALS:
+            raise SystemExit(f"Unknown trial {trial!r}; expected one of {TRIALS}")
+        run(trial)
