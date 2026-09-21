@@ -2033,7 +2033,7 @@
     <Cell ss:MergeAcross="7" ss:StyleID="m1477131391636"><Data ss:Type="String">Karlsruher Institut für Technologie</Data></Cell>
    </Row>
    <Row>
-    <Cell ss:MergeAcross="1" ss:StyleID="m1477131391744"><Data ss:Type="String">Dr. Stefan Altmann</Data></Cell>
+    <Cell ss:MergeAcross="1" ss:StyleID="m1477131391744"><Data ss:Type="String"></Data></Cell>
     <Cell ss:MergeAcross="7" ss:StyleID="m1477131391764"><Data ss:Type="String"></Data></Cell>
    </Row>
    <Row>
@@ -2058,11 +2058,11 @@
    </Row>
    <Row>
     <Cell ss:MergeAcross="1" ss:StyleID="m1477131402560"><Data ss:Type="String">Ansprechpartner</Data></Cell>
-    <Cell ss:MergeAcross="7" ss:StyleID="m1477131402580"><Data ss:Type="String">Altmann</Data></Cell>
+    <Cell ss:MergeAcross="7" ss:StyleID="m1477131402580"><Data ss:Type="String"></Data></Cell>
    </Row>
    <Row>
     <Cell ss:MergeAcross="1" ss:StyleID="m1477131402600"><Data ss:Type="String">Telefon</Data></Cell>
-    <Cell ss:MergeAcross="7" ss:StyleID="m1477131402620"><Data ss:Type="String">0721 608 47540</Data></Cell>
+    <Cell ss:MergeAcross="7" ss:StyleID="m1477131402620"><Data ss:Type="String"></Data></Cell>
    </Row>
    <Row>
     <Cell ss:MergeAcross="1" ss:StyleID="m1477131402640"><Data ss:Type="String">Fax</Data></Cell>
@@ -2070,7 +2070,7 @@
    </Row>
    <Row>
     <Cell ss:MergeAcross="1" ss:StyleID="m1477131402976"><Data ss:Type="String">E-Mail</Data></Cell>
-    <Cell ss:MergeAcross="7" ss:StyleID="m1477131402996"><Data ss:Type="String">Stefan.Altmann@kit.edu</Data></Cell>
+    <Cell ss:MergeAcross="7" ss:StyleID="m1477131402996"><Data ss:Type="String"></Data></Cell>
    </Row>
    <Row>
     <Cell ss:MergeAcross="1" ss:StyleID="m1477131403016"><Data ss:Type="String">Internet</Data></Cell>
