@@ -45,6 +45,8 @@ shared/                   smoothing and model code used by both arms
   smoothing.py              Savitzky-Golay and Butterworth filters
   piecewise_model.py        two-segment piecewise-linear fit (pwlf)
   biexponential_model.py    bi-exponential model and fit (curve_fit)
+  monoexponential_model.py  the same without the slow component (null model)
+  model_selection.py        AICc/BIC comparison of the two exponential models
   metrics.py                RMSE as % of signal amplitude
 
 treadmill/
@@ -89,7 +91,7 @@ Run the seven numbered scripts in `treadmill/scripts/` in order:
 | 3 | `03_filter_savitzky_golay.py` | `time_trial.csv` | `data/prepared/time_trial_sg_filtered.csv` |
 | 4 | `04_filter_butterworth.py` | `time_trial.csv` | `data/prepared/time_trial_bw_filtered.csv` |
 | 5 | `05_fit_piecewise.py` | all three time series | `results/piecewise_breakpoints.csv`, `results/piecewise_rmse_pct.csv` |
-| 6 | `06_fit_biexponential.py` | all three time series | `results/biexponential_breakpoints.csv`, `results/biexponential_rmse_pct.csv`, `results/biexponential_params.csv` |
+| 6 | `06_fit_biexponential.py` | all three time series | `results/biexponential_*.csv`, `results/monoexponential_*.csv`, `results/exponential_model_selection.csv` |
 | 7 | `07_plot_participants.py` | filtered data + `general_data.csv` (+ optionally step 5's breakpoints) | `figures/measured_vs_estimated.png` |
 
 Paths are relative to `treadmill/`. Steps 3 and 4 are independent of each
@@ -120,7 +122,7 @@ trial argument (`tt1` or `tt2`) and runs both when given none.
 | 3 | `03_filter_savitzky_golay.py` | step 2's table | `data/prepared/<trial>_time_trial_sg_filtered.csv` |
 | 4 | `04_filter_butterworth.py` | step 2's table | `data/prepared/<trial>_time_trial_bw_filtered.csv` |
 | 5 | `05_fit_piecewise.py` | all three time series | `results/<trial>_piecewise_breakpoints.csv`, `results/<trial>_piecewise_rmse_pct.csv` |
-| 6 | `06_fit_biexponential.py` | all three time series | `results/<trial>_biexponential_breakpoints.csv`, `results/<trial>_biexponential_rmse_pct.csv`, `results/<trial>_biexponential_params.csv` |
+| 6 | `06_fit_biexponential.py` | all three time series | `results/<trial>_biexponential_*.csv`, `results/<trial>_monoexponential_*.csv`, `results/<trial>_exponential_model_selection.csv` |
 | 7 | `07_plot_participants.py` | filtered data (+ optionally step 5's breakpoints) | `figures/<trial>_participants.png` |
 
 Paths are relative to `bike/`. Steps 3-6 call the same `shared/` functions
@@ -150,6 +152,14 @@ quantity, and in practice land at quite different points in the response
 `shared/biexponential_model.py`'s module docstring for the full
 model definition, and don't assume the two numbers are directly comparable
 without accounting for what each one actually measures.
+
+TD2 is only meaningful where the response actually has a slow component. Step
+6 therefore also fits the mono-exponential model (the same model without the
+slow component) and keeps the bi-exponential only where it lowers AICc by
+more than 2 (`shared/model_selection.py`). In many participants it does not:
+a 4-minute all-out trial may not give the slow component time to develop.
+`biexponential_breakpoints_selected.csv` holds TD2 for the supported cases
+only, and `exponential_model_selection.csv` has the full comparison.
 
 ## License
 

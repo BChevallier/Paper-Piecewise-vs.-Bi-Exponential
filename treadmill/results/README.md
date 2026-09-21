@@ -22,3 +22,19 @@ One row per participant; one column per signal variant: `sg` (Savitzky-Golay),
 - **biexponential_params.csv**
   All seven fitted parameters (`A0, A1, tau1, TD1, A2, tau2, TD2`) per
   signal variant; two header rows (variant, parameter).
+
+- **monoexponential_rmse_pct.csv**, **monoexponential_params.csv**
+  The same for the mono-exponential model: the bi-exponential without its
+  slow component (`A0, A1, tau1, TD1`), fitted as the null model.
+
+- **exponential_model_selection.csv**
+  One row per participant and signal variant: residual sum of squares, AICc
+  and BIC of both exponential models, their differences (mono - bi; positive
+  favours the bi-exponential), `slow_component_supported` (AICc lower by
+  more than 2 for the bi-exponential), and `bi_params_at_bounds`, the
+  bi-exponential parameters that ended at a bound. See
+  `shared/model_selection.py`.
+
+- **biexponential_breakpoints_selected.csv**
+  TD2 where the slow component is supported, empty where it is not. Where
+  it is not, the fitted TD2 describes a component the data doesn't support.

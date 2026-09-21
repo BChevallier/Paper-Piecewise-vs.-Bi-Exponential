@@ -13,11 +13,24 @@ series, and records:
   three variants;
 - all seven fitted parameters.
 
+It also fits the mono-exponential model (`monoexponential_model.py`, the
+same model without the slow component) and compares the two with AICc (see
+`model_selection.py`). Where the slow component isn't supported, TD2 is not a
+meaningful quantity; `biexponential_breakpoints_selected.csv` keeps TD2
+only where it is.
+
 Outputs (in `treadmill/results/`):
 - `biexponential_breakpoints.csv` — TD2 (s) x participant x method
 - `biexponential_rmse_pct.csv` — RMSE% x participant x method
 - `biexponential_params.csv` — all 7 fitted params x participant x
   method (columns are a (method, param) MultiIndex)
+- `monoexponential_rmse_pct.csv`, `monoexponential_params.csv` — the
+  same for the mono-exponential model
+- `exponential_model_selection.csv` — one row per participant and method:
+  RSS, AICc and BIC of both models, their differences, whether the slow
+  component is supported, and which bi-exponential parameters hit a bound
+- `biexponential_breakpoints_selected.csv` — TD2 where the slow
+  component is supported, empty otherwise
 
 See `05_fit_piecewise.py` for the other model this project compares the
 bi-exponential fit against, and the top-level README for why the two
@@ -31,43 +44,15 @@ import pandas as pd
 
 from treadmill_common import MODEL_INPUT_PATHS as INPUT_PATHS
 from treadmill_common import RESULTS_DIR
-from biexponential_model import PARAM_NAMES, fit_biexponential  # needs treadmill_common imported first (sys.path)
-
-BREAKPOINTS_OUTPUT = RESULTS_DIR / "biexponential_breakpoints.csv"
-RMSE_PCT_OUTPUT = RESULTS_DIR / "biexponential_rmse_pct.csv"
-PARAMS_OUTPUT = RESULTS_DIR / "biexponential_params.csv"
-
-TD2_INDEX = PARAM_NAMES.index("TD2")
+from model_selection import exponential_fit_tables  # needs treadmill_common imported first (sys.path)
 
 
 def main():
     data = {method: pd.read_csv(path) for method, path in INPUT_PATHS.items()}
-    participants = [col for col in data["sg"].columns if col != "time"]
-    methods = list(INPUT_PATHS)
-
-    breakpoints = pd.DataFrame(index=participants, columns=methods)
-    rmse_pct = pd.DataFrame(index=participants, columns=methods)
-    params = pd.DataFrame(
-        index=participants,
-        columns=pd.MultiIndex.from_product([methods, PARAM_NAMES]),
-    )
-
-    for participant in participants:
-        x = data["sg"]["time"].values
-        unfiltered = data["cleaned"][participant].values
-        for method in methods:
-            y = data[method][participant].values
-            popt, pct = fit_biexponential(x, y, y_reference=unfiltered)
-            breakpoints.loc[participant, method] = popt[TD2_INDEX]
-            rmse_pct.loc[participant, method] = pct
-            params.loc[participant, (method,)] = popt
-
-    breakpoints.to_csv(BREAKPOINTS_OUTPUT)
-    rmse_pct.to_csv(RMSE_PCT_OUTPUT)
-    params.to_csv(PARAMS_OUTPUT)
-    print(f"Breakpoints (TD2) saved to {BREAKPOINTS_OUTPUT}")
-    print(f"RMSE percentages saved to {RMSE_PCT_OUTPUT}")
-    print(f"Full parameter fits saved to {PARAMS_OUTPUT}")
+    for name, table in exponential_fit_tables(data).items():
+        path = RESULTS_DIR / f"{name}.csv"
+        table.to_csv(path)
+        print(f"{name} saved to {path}")
 
 
 if __name__ == "__main__":
