@@ -72,13 +72,20 @@ def _initial_guess(y):
     return [A0_guess, A1_guess, tau1_guess, TD1_guess, A2_guess, tau2_guess, TD2_guess]
 
 
-def fit_biexponential(x, y):
+def fit_biexponential(x, y, y_reference=None):
     """Fit the bi-exponential model to one participant's VO2 series.
+
+    The model is fitted to `y`; its RMSE% is scored against `y_reference`
+    (default: `y` itself). Pass the unfiltered signal as `y_reference` when
+    `y` is smoothed, so fits to differently smoothed versions of the same
+    data are scored against the same measurements.
 
     Returns (params, rmse_pct) where `params` is a length-7 array in
     PARAM_NAMES order, or (all-NaN array, NaN) if the fit fails to
     converge within bounds.
     """
+    if y_reference is None:
+        y_reference = y
     try:
         popt, _ = curve_fit(
             biexponential, x, y,
@@ -87,6 +94,6 @@ def fit_biexponential(x, y):
             maxfev=10000,
         )
         y_hat = biexponential(x, *popt)
-        return popt, rmse_percent(y, y_hat)
+        return popt, rmse_percent(y_reference, y_hat)
     except Exception:
         return np.full(len(PARAM_NAMES), np.nan), np.nan

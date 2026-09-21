@@ -7,7 +7,8 @@ One set of files per time trial (`tt1`, `tt2`). One row per participant; one col
   Breakpoint (s) of the two-segment piecewise-linear fit.
 
 - **<trial>_piecewise_rmse_pct.csv**
-  RMSE of the piecewise fit, as % of the signal's amplitude.
+  RMSE of the piecewise fit against the unfiltered data, as % of its
+  amplitude (the same reference for all three signal variants).
 
 - **<trial>_biexponential_breakpoints.csv**
   `TD2`, the slow component's time delay (s), treated as the bi-exponential
@@ -15,7 +16,8 @@ One set of files per time trial (`tt1`, `tt2`). One row per participant; one col
   the top-level README.
 
 - **<trial>_biexponential_rmse_pct.csv**
-  RMSE of the bi-exponential fit, as % of the signal's amplitude.
+  RMSE of the bi-exponential fit against the unfiltered data, as % of its
+  amplitude (the same reference for all three signal variants).
 
 - **<trial>_biexponential_params.csv**
   All seven fitted parameters (`A0, A1, tau1, TD1, A2, tau2, TD2`) per

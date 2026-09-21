@@ -13,6 +13,11 @@ def rmse_percent(y_observed, y_predicted):
 
     Normalizing by amplitude (max - min of the observed signal) makes the
     error comparable across participants whose absolute VO2 range differs.
+
+    The fitting code passes the *unfiltered* signal as `y_observed` for every
+    smoothing variant. Scoring a fit against the smoothed series it was
+    fitted to would reward smoothing by construction: smoothing removes the
+    breath-to-breath noise that makes up most of the residual.
     Returns NaN if the observed signal is flat (amplitude 0), since a
     percentage of zero range is undefined.
     """

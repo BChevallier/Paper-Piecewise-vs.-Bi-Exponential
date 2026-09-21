@@ -8,8 +8,9 @@ series, and records:
 - the fitted slow-component time delay `TD2` (seconds into the trial) —
   the quantity this project treats as the bi-exponential model's
   "breakpoint";
-- the fit's RMSE as a percentage of the signal's amplitude (see
-  `metrics.rmse_percent`);
+- the fit's RMSE against the unfiltered data, as a percentage of its
+  amplitude (see `metrics.rmse_percent`) — the same reference for all
+  three variants;
 - all seven fitted parameters.
 
 Outputs (in `treadmill/results/`):
@@ -53,9 +54,10 @@ def main():
 
     for participant in participants:
         x = data["sg"]["time"].values
+        unfiltered = data["cleaned"][participant].values
         for method in methods:
             y = data[method][participant].values
-            popt, pct = fit_biexponential(x, y)
+            popt, pct = fit_biexponential(x, y, y_reference=unfiltered)
             breakpoints.loc[participant, method] = popt[TD2_INDEX]
             rmse_pct.loc[participant, method] = pct
             params.loc[participant, (method,)] = popt

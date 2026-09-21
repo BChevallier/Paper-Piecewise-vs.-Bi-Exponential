@@ -4,8 +4,8 @@ Same model, bounds and scoring as the treadmill's `06_fit_biexponential.py`
 (both use `shared/biexponential_model.py`): for every participant
 and every signal variant ("sg", "bw", "cleaned" = unfiltered), fits the
 seven-parameter bi-exponential model and records `TD2` (the slow component's
-time delay, treated as this model's "breakpoint"), the RMSE% and all seven
-parameters.
+time delay, treated as this model's "breakpoint"), the RMSE% (scored
+against the unfiltered data for every variant) and all seven parameters.
 
 Outputs, per trial, in `bike/results/`:
 - `<trial>_biexponential_breakpoints.csv` — TD2 (s) x participant x method
@@ -43,9 +43,10 @@ def run(trial):
 
     x = data["sg"]["time"].values
     for participant in participants:
+        unfiltered = data["cleaned"][participant].values
         for method in methods:
             y = data[method][participant].values
-            popt, pct = fit_biexponential(x, y)
+            popt, pct = fit_biexponential(x, y, y_reference=unfiltered)
             breakpoints.loc[participant, method] = popt[TD2_INDEX]
             rmse_pct.loc[participant, method] = pct
             params.loc[participant, (method,)] = popt

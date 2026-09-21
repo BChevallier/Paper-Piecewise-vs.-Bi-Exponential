@@ -3,7 +3,8 @@
 Same model and scoring as the treadmill's `05_fit_piecewise.py` (both use
 `shared/piecewise_model.py`): for every participant and every
 signal variant ("sg", "bw", "cleaned" = unfiltered), fits a two-segment
-piecewise-linear model and records the breakpoint (s) and RMSE%.
+piecewise-linear model and records the breakpoint (s) and RMSE% (scored
+against the unfiltered data for every variant).
 
 Outputs, per trial, in `bike/results/`:
 - `<trial>_piecewise_breakpoints.csv` — breakpoint (s) x participant x method
@@ -33,9 +34,10 @@ def run(trial):
 
     x = data["sg"]["time"].values
     for participant in participants:
+        unfiltered = data["cleaned"][participant].values
         for method in methods:
             y = data[method][participant].values
-            bp, pct = fit_piecewise_breakpoint(x, y)
+            bp, pct = fit_piecewise_breakpoint(x, y, y_reference=unfiltered)
             breakpoints.loc[participant, method] = bp
             rmse_pct.loc[participant, method] = pct
 

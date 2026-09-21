@@ -7,9 +7,9 @@ piecewise-linear model to the VO2-vs-time series using `pwlf`
 `shared/piecewise_model.py`), and records:
 
 - the fitted breakpoint location (seconds into the trial), and
-- the fit's RMSE as a percentage of the signal's amplitude (see
-  `metrics.rmse_percent`), a rough fit-quality score comparable across
-  participants.
+- the fit's RMSE against the unfiltered data, as a percentage of its
+  amplitude (see `metrics.rmse_percent`) — the same reference for all
+  three variants, so smoothing isn't rewarded by construction.
 
 Outputs (in `treadmill/results/`):
 - `piecewise_breakpoints.csv` — breakpoint (s) x participant x method
@@ -43,9 +43,10 @@ def main():
 
     for participant in participants:
         x = data["sg"]["time"].values
+        unfiltered = data["cleaned"][participant].values
         for method in methods:
             y = data[method][participant].values
-            bp, pct = fit_piecewise_breakpoint(x, y)
+            bp, pct = fit_piecewise_breakpoint(x, y, y_reference=unfiltered)
             breakpoints.loc[participant, method] = bp
             rmse_pct.loc[participant, method] = pct
 

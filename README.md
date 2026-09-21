@@ -13,7 +13,11 @@ The question this asks: where does the VO2 response show a "breakpoint" or
 inflection, and does the answer depend on which of the two modeling
 methods is used, or on which signal-smoothing method is applied
 beforehand? Fit quality for both methods is judged by RMSE, expressed as a
-percentage of each participant's signal amplitude.
+percentage of each participant's signal amplitude. Every fit is scored
+against the *unfiltered* data, whichever smoothed version it was fitted to:
+scoring a fit against the smoothed series itself would make smoothing look
+better by construction, since it removes most of the breath-to-breath noise
+that the residual consists of.
 
 This repository is not a general-purpose analysis tool — it is a
 record of the exact steps used to go from the raw, recorded data to the
@@ -95,15 +99,13 @@ same three signal variants: `sg` (Savitzky-Golay filtered), `bw`
 (Butterworth filtered), and `cleaned` (no smoothing — the direct output of
 step 2).
 
-**Note on reproducibility:** steps 1-4 are deterministic and will
-reproduce the committed output files exactly. Steps 5-6 involve nonlinear
-optimization (`pwlf`'s piecewise fit, `scipy.optimize.curve_fit`'s
-bi-exponential fit); re-running them can shift fitted values by a small
-amount (observed: differences at roughly the 4th-6th significant digit)
-depending on installed `numpy`/`scipy`/`pwlf` versions and BLAS backend.
-The committed result files in `treadmill/results/` are the ones actually
-used for the published analysis — treat re-run output as a correctness
-check on the *pipeline*, not a byte-identical replacement for those files.
+**Note on reproducibility:** every step is deterministic: re-running
+reproduces the committed outputs exactly with the package versions in
+`requirements.txt`. The piecewise fit's optimizer (`pwlf`'s differential
+evolution) starts from random candidates and is seeded for this reason
+(`RANDOM_SEED` in `shared/piecewise_model.py`). With other `numpy`/`scipy`/
+`pwlf` versions or BLAS backends, fitted values from steps 5-6 can differ
+slightly (observed: around the 4th-6th significant digit).
 
 ## Reproducing the cycling pipeline
 
