@@ -1,7 +1,7 @@
 # Piecewise vs. Bi-Exponential
 
 Code and data behind a comparison of two ways to model the VO2 (oxygen
-uptake) response during a short, self-paced exercise time trial:
+uptake) response during a 4-minute maximal exercise bout:
 
 1. **Piecewise-linear** — a two-segment linear fit with one breakpoint
    (via [`pwlf`](https://github.com/cjekel/piecewise_linear_fit_py)).
@@ -28,10 +28,12 @@ these scripts into new files.
 
 ## Status
 
-- **Treadmill running** (`treadmill/`) — the complete, published pipeline:
-  raw data all the way through to breakpoint/model-fit results and figures.
-- **Cycling** (`bike/`) — a second arm of the same comparison: two 4-min
-  cycling time trials (`tt1`, `tt2`) run through the same smoothing and the
+- **Treadmill running** (`treadmill/`) — 4 min at a constant speed, set to
+  the speed each runner was predicted to sustain for 4 min. The complete,
+  published pipeline: raw data all the way through to breakpoint/model-fit
+  results and figures.
+- **Cycling** (`bike/`) — a second arm of the same comparison: two self-paced
+  4-min cycling time trials (`tt1`, `tt2`) run through the same smoothing and the
   same two models as the treadmill data. Not yet part of the published
   results.
 
