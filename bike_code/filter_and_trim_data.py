@@ -1,58 +1,40 @@
 """
-Trim each cycling time-trial CPET recording to the trial itself, then low-pass
-filter V'O2.
+Supplementary 1 Hz export: trim each cycling time-trial CPET recording to the
+trial itself and add a low-pass filtered V'O2 column, one CSV per participant
+in `bike_data/prepared_data/<trial>/`.
 
-Clock correction
-----------------
-The spiro device clock runs *behind* real time by a per-participant offset
-recorded in delay_anmedu.xlsx: a delay of 20 means the spiro reads 2:00 when
-2:20 has actually elapsed. The time trial starts TRIAL_START_REAL_S into the
-session in real time, so on the spiro clock it begins at
-TRIAL_START_REAL_S - delay.
-
-An earlier version of this script trimmed at 00:03:<delay>, i.e. it *added* the
-delay instead of subtracting it. For participants with a large offset that
-discarded up to a minute of the V'O2 onset transient — the part the kinetics
-models are fitted to.
+Not part of the numbered pipeline — the models are fitted to the 5-second
+tables built by `02_prepare_time_trial_data.py`. Kept as a per-second,
+all-channels view of each trial for inspection. The clock correction is the
+shared one in `bike_common.py`.
 
 Usage:
-    python filter_and_trim_data.py            # both trials
-    python filter_and_trim_data.py tt1        # one trial
+    python bike_code/filter_and_trim_data.py            # both trials
+    python bike_code/filter_and_trim_data.py tt1        # one trial
 """
 
 import sys
-from pathlib import Path
 
 import pandas as pd
 from scipy.signal import butter, filtfilt
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-PATH_DELAY = REPO_ROOT / "bike_data" / "raw_data" / "delay_anmedu.xlsx"
-RAW_ROOT = REPO_ROOT / "bike_data" / "raw_data"
-PREPARED_ROOT = REPO_ROOT / "bike_data" / "prepared_data"
-
-TRIALS = ("tt1", "tt2")
-FIRST_PARTICIPANT = 1
-LAST_PARTICIPANT = 44
-
-# Real-time offset of the trial start from the beginning of the recording.
-TRIAL_START_REAL_S = 180
+from bike_common import (
+    FIRST_PARTICIPANT,
+    LAST_PARTICIPANT,
+    PREPARED_ROOT,
+    RAW_ROOT,
+    REPO_ROOT,
+    load_delays,
+    participant_id,
+    requested_trials,
+    seconds_since_trial_start,
+    trial_start_on_spiro_clock,
+)
 
 COLUMNS_TO_FILTER = ["V'O2"]
 CUTOFF_HZ = 0.2
 FILTER_ORDER = 4
 MIN_POINTS_FOR_FILTER = 20
-
-
-def load_delays(trial):
-    """Map participant id -> spiro clock offset in seconds for one trial."""
-    df = pd.read_excel(PATH_DELAY)
-    return df.set_index("PID")[f"delay_cpet_{trial}"]
-
-
-def trial_start_on_spiro_clock(delay_s):
-    """Spiro-clock time at which the trial starts, given the device's lag."""
-    return pd.Timedelta(seconds=TRIAL_START_REAL_S - delay_s)
 
 
 def lowpass(series, fs):
@@ -70,9 +52,7 @@ def process_participant(raw_path, delay_s):
         return None, "no data after trial start"
 
     # Seconds since trial start, on the corrected (real-time) clock.
-    df["t_trial_s"] = (
-        df["t"].dt.total_seconds() + delay_s - TRIAL_START_REAL_S
-    )
+    df["t_trial_s"] = seconds_since_trial_start(df["t"], delay_s)
 
     df = df.set_index("t")
 
@@ -107,7 +87,7 @@ def run(trial):
 
     written = 0
     for participant in range(FIRST_PARTICIPANT, LAST_PARTICIPANT + 1):
-        pid = f"p{participant:02d}"
+        pid = participant_id(participant)
         raw_path = RAW_ROOT / trial / f"{trial}_{pid}.csv"
         if not raw_path.exists():
             continue
@@ -135,8 +115,5 @@ def run(trial):
 
 
 if __name__ == "__main__":
-    requested = sys.argv[1:] or TRIALS
-    for trial in requested:
-        if trial not in TRIALS:
-            raise SystemExit(f"Unknown trial {trial!r}; expected one of {TRIALS}")
+    for trial in requested_trials(sys.argv):
         run(trial)

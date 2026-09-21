@@ -27,10 +27,10 @@ these scripts into new files.
 - **Treadmill running** (`treadmill_data/`, `code/`) — the complete,
   published pipeline: raw data all the way through to breakpoint/model-fit
   results and figures. Documented below.
-- **Cycling** (`bike_data/`, `bike_code/`) — an in-progress second arm of
-  the same comparison, currently only as far as raw-to-filtered data; no
-  breakpoint/model-fitting step exists for it yet, and it is not part of
-  the published results.
+- **Cycling** (`bike_data/`, `bike_code/`) — a second arm of the same
+  comparison: two 4-min cycling time trials (`tt1`, `tt2`) run through the
+  same smoothing and the same two models as the treadmill data. Documented
+  below; not yet part of the published results.
 
 ## Repository layout
 
@@ -53,9 +53,15 @@ code/
 
 figures/                 output of the visualization step
 
-bike_data/, bike_code/,
+bike_data/
+  raw_data/              CPET exports (ergo_data/), per-second CSVs
+                         (tt1/, tt2/), clock offsets (delay_anmedu.xlsx)
+  prepared_data/         outputs of bike_code/02-04
+  breakpoints_and_modelFit_by_method/
+                         outputs of bike_code/05-06
+bike_code/               cycling pipeline, steps 0-7 (see below)
 code/data_processing/bike/
-                         cycling arm, work in progress (see Status above)
+                         early exploratory scripts, superseded by bike_code/
 ```
 
 ## Reproducing the treadmill pipeline
@@ -96,6 +102,44 @@ The committed result files in `treadmill_data/breakpoints_and_modelFit_by_method
 are the ones actually used for the published analysis — treat re-run
 output as a correctness check on the *pipeline*, not a byte-identical
 replacement for those files.
+
+## Reproducing the cycling pipeline
+
+Same environment as above. Each script takes an optional trial argument
+(`tt1` or `tt2`) and runs both when given none.
+
+| # | Script | Reads | Writes |
+|---|--------|-------|--------|
+| 0 | `bike_code/00_anonymize_ergo_data.py` | `bike_data/raw_data/ergo_data/*.xml` | the same files, facility contact fields blanked (only needed after importing new exports) |
+| 1 | `bike_code/01_xml_to_csv.py` | `ergo_data/<trial>_cpet_pNN.xml` | `bike_data/raw_data/<trial>/<trial>_pNN.csv` |
+| 2 | `bike_code/02_prepare_time_trial_data.py` | per-second CSVs + `delay_anmedu.xlsx` | `bike_data/prepared_data/<trial>_prepared_time_trial.csv` |
+| 3 | `bike_code/03_filter_savitzky_golay.py` | step 2's table | `<trial>_sg_filtered.csv` |
+| 4 | `bike_code/04_filter_butterworth.py` | step 2's table | `<trial>_bw_filtered.csv` |
+| 5 | `bike_code/05_fit_piecewise.py` | all three signal variants | `<trial>_breakpoints_piecewise.csv`, `..._rmse_pct.csv` |
+| 6 | `bike_code/06_fit_biexponential.py` | all three signal variants | `<trial>_breakpoints_biexponential.csv`, `..._rmse_pct.csv`, `<trial>_biexponential_params.csv` |
+| 7 | `bike_code/07_plot_participants.py` | filtered data (+ optionally step 5's breakpoints) | `figures/bike_<trial>_participants.png` |
+
+Steps 3-6 call the same functions as treadmill steps 3-6
+(`code/data_processing/run/smoothing.py`, `code/vo2_modeling/piecewise_model.py`,
+`biexponential_model.py`, `metrics.py`), with the same settings, so the two
+modalities differ only in their data.
+
+Two things differ from the treadmill data and are handled in step 2:
+
+- **Clock offset.** The spirometer's clock lags real time by a
+  per-participant amount recorded in `delay_anmedu.xlsx`. The trial starts
+  180 s into the session in real time, i.e. at `180 - delay` on the
+  spirometer clock.
+- **Sampling.** The cycling data is per-second; the treadmill data is in
+  5-second samples, and the smoothing settings are defined on that grid.
+  Step 2 averages V'O2 into 5-second bins from 0 to 240 s, each labelled by
+  its end, so t = 0 holds the last 5 s before the start (the pre-trial
+  baseline) as on the treadmill.
+
+`bike_code/filter_and_trim_data.py` is a supplementary per-second export of
+each trial (all channels, V'O2 low-pass filtered) in
+`bike_data/prepared_data/<trial>/`, kept for inspection; the models do not
+use it.
 
 ## Interpreting the two models' "breakpoints"
 

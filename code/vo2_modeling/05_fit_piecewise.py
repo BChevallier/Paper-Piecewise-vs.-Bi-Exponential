@@ -3,7 +3,8 @@
 For every participant and every smoothing method ("sg" = Savitzky-Golay,
 "bw" = Butterworth, "cleaned" = unfiltered), fits a continuous two-segment
 piecewise-linear model to the VO2-vs-time series using `pwlf`
-(`PiecewiseLinFit(x, y).fit(2)` — exactly one breakpoint), and records:
+(`PiecewiseLinFit(x, y).fit(2)` — exactly one breakpoint; see
+`piecewise_model.py`), and records:
 
 - the fitted breakpoint location (seconds into the trial), and
 - the fit's RMSE as a percentage of the signal's amplitude (see
@@ -24,11 +25,9 @@ from the repo root.
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-import pwlf
 
-from metrics import rmse_percent
+from piecewise_model import fit_piecewise_breakpoint
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PREPARED_DIR = REPO_ROOT / "treadmill_data" / "prepared_data"
@@ -42,26 +41,6 @@ INPUT_PATHS = {
 
 BREAKPOINTS_OUTPUT = RESULTS_DIR / "tt4_breakpoints_piecewise.csv"
 RMSE_PCT_OUTPUT = RESULTS_DIR / "tt4_breakpoints_piecewise_rmse_pct.csv"
-
-N_SEGMENTS = 2  # i.e. exactly one breakpoint
-
-
-def fit_piecewise_breakpoint(x, y):
-    """Fit a 2-segment piecewise-linear model; return (breakpoint, rmse_pct).
-
-    Returns (NaN, NaN) if the fit raises or doesn't return the expected
-    [x0, breakpoint, x_end] triple that `pwlf.fit(2)` normally produces.
-    """
-    try:
-        fit = pwlf.PiecewiseLinFit(x, y)
-        segment_boundaries = fit.fit(N_SEGMENTS)
-        if len(segment_boundaries) != 3:
-            return np.nan, np.nan
-        breakpoint_s = segment_boundaries[1]
-        y_hat = fit.predict(x)
-        return breakpoint_s, rmse_percent(y, y_hat)
-    except Exception:
-        return np.nan, np.nan
 
 
 def main():

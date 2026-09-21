@@ -3,8 +3,8 @@ Convert the raw CPET spiro exports (Excel 2003 SpreadsheetML, .xml) into one CSV
 per participant and trial.
 
 Usage:
-    python xml_to_csv.py            # both trials
-    python xml_to_csv.py tt1        # one trial
+    python bike_code/01_xml_to_csv.py            # both trials
+    python bike_code/01_xml_to_csv.py tt1        # one trial
 """
 
 import csv

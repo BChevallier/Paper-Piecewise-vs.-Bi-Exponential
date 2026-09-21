@@ -22,8 +22,8 @@ script does not itself restate the data it exists to delete.
 Re-run safe: once blanked there is nothing left to match.
 
 Usage:
-    python anonymize_ergo_data.py            # blank the fields in place
-    python anonymize_ergo_data.py --check    # report only, change nothing
+    python bike_code/00_anonymize_ergo_data.py            # blank the fields in place
+    python bike_code/00_anonymize_ergo_data.py --check    # report only, change nothing
 """
 
 import re
