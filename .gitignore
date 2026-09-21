@@ -5,3 +5,4 @@ anmedu_raw_data_summary.md
 venv/
 __pycache__/
 .idea/
+local/

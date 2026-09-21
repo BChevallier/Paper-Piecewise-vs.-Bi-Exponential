@@ -57,7 +57,7 @@ treadmill/
   figures/                output of step 07
 
 bike/
-  scripts/                steps 00-07, run in order
+  scripts/                steps 01-07, run in order
   data/raw/               spirometer exports and clock offsets
   data/converted/         exports as per-second CSVs (step 01)
   data/prepared/          outputs of steps 02-04
@@ -116,7 +116,6 @@ trial argument (`tt1` or `tt2`) and runs both when given none.
 
 | # | Script | Reads | Writes |
 |---|--------|-------|--------|
-| 0 | `00_anonymize_cpet_exports.py` | `data/raw/cpet_exports/*.xml` | the same files, facility contact fields blanked (only needed after importing new exports) |
 | 1 | `01_xml_to_csv.py` | `data/raw/cpet_exports/<trial>_cpet_pNN.xml` | `data/converted/<trial>/<trial>_pNN.csv` |
 | 2 | `02_prepare_time_trial_data.py` | per-second CSVs + `data/raw/delay_anmedu.xlsx` | `data/prepared/<trial>_time_trial.csv` |
 | 3 | `03_filter_savitzky_golay.py` | step 2's table | `data/prepared/<trial>_time_trial_sg_filtered.csv` |
