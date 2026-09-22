@@ -1,11 +1,8 @@
 # Dependencies for this repository's Python pipeline.
 #
-# Treadmill pipeline (code/data_processing, code/vo2_modeling,
-# code/data_visualization) needs everything below except openpyxl.
-#
-# Bike pipeline (bike_code/, code/data_processing/bike/) additionally needs
-# openpyxl to read delay_anmedu.xlsx; that pipeline is a work in progress
-# and not yet part of the published analysis.
+# The treadmill pipeline (treadmill/scripts/) needs everything below except
+# openpyxl. The bike pipeline (bike/scripts/) additionally needs openpyxl to
+# read bike/data/raw/delay_anmedu.xlsx.
 pandas>=2.0
 numpy>=1.24
 scipy>=1.10
