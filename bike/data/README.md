@@ -16,7 +16,9 @@ breath-by-breath (exported at 1 s) on a Cortex MetaLyzer 3B spirometer.
   performance/physiology for each test (power, heart rate, VO2peak, lactate,
   RPE, efficiency, ...). Not used by the scripts.
 - **prepared/** — the model inputs, one wide table per trial: `time` (0-240 s
-  in 5-s steps) plus one V'O2 column per participant.
+  in 5-s steps) plus one V'O2 column per participant. Excluded participants
+  (`EXCLUDED_PARTICIPANTS` in `scripts/bike_common.py`) are left out here
+  and in everything downstream; `raw/` and `converted/` still hold them.
   - `<trial>_time_trial.csv` — 5-s mean V'O2 (`02_prepare_time_trial_data.py`)
   - `<trial>_time_trial_sg_filtered.csv` — Savitzky-Golay smoothed (`03`)
   - `<trial>_time_trial_bw_filtered.csv` — Butterworth smoothed (`04`)

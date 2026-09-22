@@ -38,6 +38,21 @@ TRIALS = ("tt1", "tt2")
 FIRST_PARTICIPANT = 1
 LAST_PARTICIPANT = 44
 
+# Participants excluded from the analysis, with the reason. Excluded as a
+# whole (both trials), by step 02; their raw exports stay in the repo as
+# recorded. Only 30, 34 and 37 have exports here, the others never did.
+EXCLUDED_PARTICIPANTS = {
+    3: "tests cancelled",
+    16: "tests cancelled",
+    39: "tests cancelled",
+    41: "tests cancelled",
+    45: "tests cancelled",
+    11: "at least one time trial flawed",
+    30: "at least one time trial flawed",
+    37: "at least one time trial flawed",
+    34: "CPET measurement for tt2 flawed",
+}
+
 # Real-time offset of the trial start from the beginning of the recording.
 TRIAL_START_REAL_S = 180
 # Both time trials are 4-minute efforts, like the treadmill trial.

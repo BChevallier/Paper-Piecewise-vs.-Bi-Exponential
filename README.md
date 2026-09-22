@@ -142,6 +142,10 @@ Two things differ from the treadmill data and are handled in step 2:
   its end, so t = 0 holds the last 5 s before the start (the pre-trial
   baseline) as on the treadmill.
 
+Step 2 also leaves out the excluded participants (`EXCLUDED_PARTICIPANTS`
+in `bike/scripts/bike_common.py`, with the reason for each). Their raw
+exports are kept as recorded.
+
 ## Interpreting the two models' "breakpoints"
 
 The piecewise model's breakpoint is the single fitted junction between its

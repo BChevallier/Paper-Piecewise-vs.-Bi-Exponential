@@ -17,7 +17,8 @@ Each bin is labelled by its end: the value at time T is the mean over
 (T - 5, T]. The t = 0 bin therefore holds the last 5 s before the start —
 the pre-trial baseline, matching the treadmill table's t = 0 row.
 
-A participant is skipped, with a message, if any bin is empty.
+A participant is skipped, with a message, if they are in
+`EXCLUDED_PARTICIPANTS` (see `bike_common.py`) or if any bin is empty.
 
 Usage:
     python bike/scripts/02_prepare_time_trial_data.py        # both trials
@@ -30,6 +31,7 @@ import numpy as np
 import pandas as pd
 
 from bike_common import (
+    EXCLUDED_PARTICIPANTS,
     FIRST_PARTICIPANT,
     LAST_PARTICIPANT,
     REPO_ROOT,
@@ -66,6 +68,10 @@ def run(trial):
         pid = participant_id(participant)
         raw_path = converted_path(trial, pid)
         if not raw_path.exists():
+            continue
+
+        if participant in EXCLUDED_PARTICIPANTS:
+            print(f"{trial} {pid}: excluded ({EXCLUDED_PARTICIPANTS[participant]})")
             continue
 
         delay_s = delays.get(participant)
